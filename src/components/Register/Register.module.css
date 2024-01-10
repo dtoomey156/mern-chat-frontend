@@ -1,0 +1,44 @@
+button,
+input {
+    all: unset;
+}
+
+.registerForm {
+    display: flex;
+    flex-direction: column;
+    gap: 5vh;
+    width: 50%;
+    height: 50%;
+}
+
+.button {
+    all: unset;
+    border: 2px solid #0d6efd;
+    border-radius: 5px;
+    text-align: center;
+    font-size: 2vw;
+    padding: 0.5vw;
+    color: white;
+    background-color: #0d6efd;
+}
+
+input[type="username"],
+input[type="password"] {
+    box-sizing: border-box;
+    border: 2px solid transparent;
+    border-radius: 5px;
+    padding: 0.5vw;
+    font-size: 2vw;
+    transition: border 0.3s ease-in;
+}
+
+input[type="username"]:focus,
+input[type="password"]:focus {
+    border: 2px solid #0d6efd;
+    /* width: 50rem;
+    height: 5rem; */
+}
+
+input::placeholder {
+    text-align: center;
+}

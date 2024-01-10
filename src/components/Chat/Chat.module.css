@@ -1,0 +1,36 @@
+.chatContainer {
+    display: flex;
+    width: 30%;
+    flex-wrap: wrap;
+}
+
+.user {
+    flex-basis: 100%;
+    background-color: beige;
+}
+
+.peoplePane {
+    background-color: antiquewhite;
+    /* width: 30%; */
+    flex-basis: 30%;
+}
+
+.messagePane {
+    background-color: aliceblue;
+    /* width: 90%; */
+    flex-basis: 70%;
+}
+
+.composeMessage {
+    display: flex;
+    background-color: beige;
+    flex-basis: 100%;
+}
+
+.composeMessage input {
+    flex-basis: 80%;
+}
+
+.composeMessage button {
+    flex-basis: 5%;
+}
