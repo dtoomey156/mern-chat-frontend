@@ -13,12 +13,25 @@
     background-color: antiquewhite;
     /* width: 30%; */
     flex-basis: 30%;
+    cursor: default;
 }
 
 .messagePane {
     background-color: aliceblue;
     /* width: 90%; */
     flex-basis: 70%;
+    /* erase below if needed*/
+    position: relative;
+    min-height: 200px;
+}
+
+.messageScrollDiv {
+    position: absolute;
+    overflow-y: scroll;
+    inset: 5px;
+    /* delete below if necessary */
+    display: flex;
+    flex-direction: column;
 }
 
 .composeMessage {
@@ -33,4 +46,26 @@
 
 .composeMessage button {
     flex-basis: 5%;
+}
+
+.selectedUser {
+    background-color: aqua;
+}
+
+.messageStyling {
+    /* display: inline-flex; */
+    padding: 20px;
+    border: 1px red solid;
+    margin: 5px;
+    border-radius: 10px;
+}
+
+.sentMessageStyling {
+    margin-left: auto;
+    background-color: rgb(72, 72, 243);
+    color: white;
+}
+
+.receivedMessageStyling {
+    margin-right: auto;
 }

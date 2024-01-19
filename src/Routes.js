@@ -7,7 +7,6 @@ export function Routes() {
     const { username, id } = useContext(UserContext);
 
     if (username) {
-        // return `logged in ${username}`;
         return <Chat />;
     } else {
         return <RegisterAndLoginForm />;
