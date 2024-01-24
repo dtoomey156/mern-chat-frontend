@@ -1,6 +1,6 @@
 import React from "react";
 import styles from "./Chat.module.css";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 import { UserContext } from "../../UserProvider";
 import { uniqBy } from "lodash";
 
@@ -11,12 +11,80 @@ function Chat() {
     const [selectedUserId, setSelectedUserId] = useState(null);
     const [newMessageText, setNewMessageText] = useState("");
     const [messages, setMessages] = useState([]);
+    const divUnderMessages = useRef();
+    const scroll = useRef(null);
 
     useEffect(() => {
         const ws = new WebSocket("ws://localhost:4040");
         setWs(ws);
         ws.addEventListener("message", handleMessage);
     }, []);
+
+    // atbottom of scroll is actually 109 pixels because of margin and border not factored into some of the properties
+
+    // useEffect(() => {
+    //     const val = scroll.current;
+    //     if (val) {
+    //         const atBottom =
+    //             val.scrollHeight - val.scrollTop - val.clientHeight;
+    //         if (atBottom > 109) {
+    //             return;
+    //         } else {
+    //             val.scrollTop = val.scrollHeight;
+    //         }
+    //     }
+    // }, [messages]);
+
+    // Refactored below to be more succinct
+
+    function atBottom() {
+        const { clientHeight, scrollHeight, scrollTop } = scroll.current;
+        if (scrollHeight <= scrollTop + clientHeight + 109) {
+            scroll.current?.scrollTo(0, scrollHeight);
+        } else {
+            // THIS IS WHERE I WANT TO COME UP WITH AN ICON POPUP ON THE USER
+            // FOR UNREAD MESSAGES THAT IS REMOVED ONCE SCROLLED TO THE BOTTOM AGAIN
+        }
+    }
+
+    useEffect(() => {
+        if (scroll.current) {
+            atBottom();
+        }
+    }, [messages]);
+
+    // useEffect(() => {
+    //     const val = scroll.current;
+    //     if (val) {
+    //         const atBottom =
+    //             val.scrollHeight - val.scrollTop - val.clientHeight;
+    //         console.log(atBottom, "at bottom");
+    //         console.log(val.scrollTop, "scroll top");
+    //         console.log(val.scrollHeight, "scroll height");
+    //         console.log(val.clientHeight, "client height");
+    //     }
+    // }, [messages]);
+
+    //this one uses offsetHeight for comparison purposes
+
+    // useEffect(() => {
+    //     const val = scroll.current;
+    //     if (val) {
+    //         const atBottom =
+    //             val.scrollHeight - val.scrollTop - val.offsetHeight;
+    //         console.log(atBottom, "at bottom");
+    //         console.log(val.scrollTop, "scroll top");
+    //         console.log(val.scrollHeight, "scroll height");
+    //         console.log(val.offsetHeight, "offset height");
+    //     }
+    // }, [messages]);
+
+    // useEffect(() => {
+    //     const div = divUnderMessages.current;
+    //     if (div) {
+    //         div.scrollIntoView({ behavior: "smooth", block: "end" });
+    //     }
+    // }, [messages]);
 
     function showOnlinePeople(peopleArray) {
         // console.log(peopleArray);
@@ -30,7 +98,6 @@ function Chat() {
 
     function handleMessage(e) {
         const messageData = JSON.parse(e.data);
-        console.log("handle message", { e, messageData });
         if ("online" in messageData) {
             showOnlinePeople(messageData.online);
         } else if ("text" in messageData) {
@@ -42,8 +109,6 @@ function Chat() {
 
     const onlineExcludeMyUsername = { ...onlinePeople };
     delete onlineExcludeMyUsername[id];
-
-    console.log("messages variable", messages);
 
     function sendMessage(e) {
         e.preventDefault();
@@ -65,14 +130,15 @@ function Chat() {
                 id: Date.now(),
             },
         ]);
+
+        // const div = divUnderMessages.current;
+        // div.scrollIntoView({ behavior: "smooth", block: "end" });
     }
 
     // console.log(selectedUserId);
     // console.log(username);
 
     const messagesWithoutDupes = uniqBy(messages, "id");
-
-    console.log("messages without dupes", messagesWithoutDupes);
 
     return (
         <div className={styles.chatContainer}>
@@ -96,7 +162,7 @@ function Chat() {
             </div>
             <div className={styles.messagePane}>
                 {selectedUserId && (
-                    <div className={styles.messageScrollDiv}>
+                    <div ref={scroll} className={styles.messageScrollDiv}>
                         {messagesWithoutDupes.map((message) => (
                             <div
                                 key={message.id}
@@ -114,10 +180,11 @@ function Chat() {
                                 {message.text}
                             </div>
                         ))}
+                        {/* <div ref={divUnderMessages}></div> */}
                     </div>
                 )}
             </div>
-            {!!selectedUserId && (
+            {selectedUserId && (
                 <form className={styles.composeMessage} onSubmit={sendMessage}>
                     <input
                         value={newMessageText}
