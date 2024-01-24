@@ -18,7 +18,7 @@ function Chat() {
     useEffect(() => {
         const ws = new WebSocket("ws://localhost:4040");
         setWs(ws);
-        ws.addEventListener("message", handleMessage);
+        ws.addEventListener("message", handleReceivedMessage);
     }, []);
 
     // at bottom of scroll is actually 109 pixels because of margin and border not factored into some of the properties
@@ -38,7 +38,7 @@ function Chat() {
 
     // Refactored below to be more succinct
 
-    function atBottom() {
+    function autoScrollMessages() {
         const { clientHeight, scrollHeight, scrollTop } = scroll.current;
         if (scrollHeight <= scrollTop + clientHeight + 109) {
             scroll.current?.scrollTo(0, scrollHeight);
@@ -49,7 +49,7 @@ function Chat() {
         }
     }
 
-    function handleScrollToBottom() {
+    function clearUnreadMessages() {
         const { clientHeight, scrollHeight, scrollTop } = scroll.current;
         if (scrollHeight <= scrollTop + clientHeight + 109) {
             unreadMessageCount.current = 0;
@@ -59,7 +59,7 @@ function Chat() {
 
     useEffect(() => {
         if (scroll.current) {
-            atBottom();
+            autoScrollMessages();
         }
     }, [messages]);
 
@@ -106,7 +106,7 @@ function Chat() {
         setOnlinePeople(people);
     }
 
-    function handleMessage(e) {
+    function handleReceivedMessage(e) {
         const messageData = JSON.parse(e.data);
         if ("online" in messageData) {
             showOnlinePeople(messageData.online);
@@ -179,7 +179,7 @@ function Chat() {
                 {selectedUserId && (
                     <div
                         ref={scroll}
-                        onScroll={handleScrollToBottom}
+                        onScroll={clearUnreadMessages}
                         className={styles.messageScrollDiv}
                     >
                         {messagesWithoutDupes.map((message) => (
