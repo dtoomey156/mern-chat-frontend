@@ -13,6 +13,7 @@ function Chat() {
     const [messages, setMessages] = useState([]);
     const divUnderMessages = useRef();
     const scroll = useRef(null);
+    const unreadMessageCount = useRef(0);
 
     useEffect(() => {
         const ws = new WebSocket("ws://localhost:4040");
@@ -20,7 +21,7 @@ function Chat() {
         ws.addEventListener("message", handleMessage);
     }, []);
 
-    // atbottom of scroll is actually 109 pixels because of margin and border not factored into some of the properties
+    // at bottom of scroll is actually 109 pixels because of margin and border not factored into some of the properties
 
     // useEffect(() => {
     //     const val = scroll.current;
@@ -41,9 +42,18 @@ function Chat() {
         const { clientHeight, scrollHeight, scrollTop } = scroll.current;
         if (scrollHeight <= scrollTop + clientHeight + 109) {
             scroll.current?.scrollTo(0, scrollHeight);
-        } else {
-            // THIS IS WHERE I WANT TO COME UP WITH AN ICON POPUP ON THE USER
-            // FOR UNREAD MESSAGES THAT IS REMOVED ONCE SCROLLED TO THE BOTTOM AGAIN
+            // unreadMessageCount.current = 0;
+        } else if (scrollHeight !== scrollTop + clientHeight + 109) {
+            unreadMessageCount.current += 1;
+            console.log(unreadMessageCount);
+        }
+    }
+
+    function handleScrollToBottom() {
+        const { clientHeight, scrollHeight, scrollTop } = scroll.current;
+        if (scrollHeight <= scrollTop + clientHeight + 109) {
+            unreadMessageCount.current = 0;
+            console.log(unreadMessageCount.current);
         }
     }
 
@@ -102,8 +112,13 @@ function Chat() {
             showOnlinePeople(messageData.online);
         } else if ("text" in messageData) {
             setMessages((prev) => [...prev, { ...messageData }]);
+            // handleUnreadMessage(messageData);
         }
     }
+
+    // function handleUnreadMessage(messageData) {
+
+    // }
 
     // removes our user name from the list of people on the chat
 
@@ -162,7 +177,11 @@ function Chat() {
             </div>
             <div className={styles.messagePane}>
                 {selectedUserId && (
-                    <div ref={scroll} className={styles.messageScrollDiv}>
+                    <div
+                        ref={scroll}
+                        onScroll={handleScrollToBottom}
+                        className={styles.messageScrollDiv}
+                    >
                         {messagesWithoutDupes.map((message) => (
                             <div
                                 key={message.id}
