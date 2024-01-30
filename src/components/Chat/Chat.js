@@ -3,6 +3,7 @@ import styles from "./Chat.module.css";
 import { useContext, useEffect, useState, useRef } from "react";
 import { UserContext } from "../../UserProvider";
 import { uniqBy } from "lodash";
+import axios from "axios";
 
 function Chat() {
     const { username, id } = useContext(UserContext);
@@ -12,14 +13,33 @@ function Chat() {
     const [newMessageText, setNewMessageText] = useState("");
     const [messages, setMessages] = useState([]);
     const divUnderMessages = useRef();
+    const scrollAtBottom = useRef(false);
     const scroll = useRef(null);
     const unreadMessageCount = useRef(0);
 
     useEffect(() => {
+        connectToWs();
+    }, []);
+
+    function connectToWs() {
         const ws = new WebSocket("ws://localhost:4040");
         setWs(ws);
         ws.addEventListener("message", handleReceivedMessage);
-    }, []);
+        ws.addEventListener("close", () => {
+            setTimeout(() => {
+                console.log("WS disconnected. Trying to reconnect...");
+            }, 1000);
+        });
+    }
+
+    useEffect(() => {
+        if (selectedUserId) {
+            scrollAtBottom.current = false;
+            axios.get("/messages/" + selectedUserId).then((res) => {
+                setMessages(res.data);
+            });
+        }
+    }, [selectedUserId]);
 
     // at bottom of scroll is actually 109 pixels because of margin and border not factored into some of the properties
 
@@ -28,7 +48,7 @@ function Chat() {
     //     if (val) {
     //         const atBottom =
     //             val.scrollHeight - val.scrollTop - val.clientHeight;
-    //         if (atBottom > 109) {
+    //         if (atBottom > 71) {
     //             return;
     //         } else {
     //             val.scrollTop = val.scrollHeight;
@@ -38,30 +58,50 @@ function Chat() {
 
     // Refactored below to be more succinct
 
-    function autoScrollMessages() {
-        const { clientHeight, scrollHeight, scrollTop } = scroll.current;
-        if (scrollHeight <= scrollTop + clientHeight + 109) {
-            scroll.current?.scrollTo(0, scrollHeight);
-            // unreadMessageCount.current = 0;
-        } else if (scrollHeight !== scrollTop + clientHeight + 109) {
-            unreadMessageCount.current += 1;
-            console.log(unreadMessageCount);
-        }
-    }
-
-    function clearUnreadMessages() {
-        const { clientHeight, scrollHeight, scrollTop } = scroll.current;
-        if (scrollHeight <= scrollTop + clientHeight + 109) {
-            unreadMessageCount.current = 0;
-            console.log(unreadMessageCount.current);
-        }
-    }
+    // function autoScrollMessages() {
+    //     const { clientHeight, scrollHeight, scrollTop } = scroll.current;
+    //     console.log(scrollHeight, "scroll height");
+    //     console.log(scrollHeight - scrollTop - clientHeight, "should be 0");
+    //     if (scrollHeight <= scrollTop + clientHeight + 71) {
+    //         scroll.current?.scrollTo(0, scrollHeight);
+    //         // unreadMessageCount.current = 0;
+    //     } else if (scrollHeight !== scrollTop + clientHeight + 71) {
+    //         unreadMessageCount.current += 1;
+    //         console.log(unreadMessageCount);
+    //         // handleUnreadMessages(onlinePeople);
+    //     }
+    // }
 
     useEffect(() => {
-        if (scroll.current) {
-            autoScrollMessages();
+        if (scroll.current && scrollAtBottom.current === true) {
+            const { scrollHeight } = scroll.current;
+            scroll.current.scrollTo(0, scrollHeight);
         }
     }, [messages]);
+
+    function checkScrollPosition() {
+        const { clientHeight, scrollHeight, scrollTop } = scroll.current;
+        if (scrollHeight - clientHeight - scrollTop === 0) {
+            // setAtBottomScroll(true);
+            scrollAtBottom.current = true;
+        } else {
+            scrollAtBottom.current = false;
+        }
+
+        // console.log(scrollAtBottom.current);
+    }
+
+    // function handleUnreadMessages(list) {
+    //     console.log({ list }, "yeahhhhhh baby");
+    // }
+
+    // function clearUnreadMessages() {
+    //     const { clientHeight, scrollHeight, scrollTop } = scroll.current;
+    //     if (scrollHeight <= scrollTop + clientHeight + 71) {
+    //         unreadMessageCount.current = 0;
+    //         console.log(unreadMessageCount.current);
+    //     }
+    // }
 
     // useEffect(() => {
     //     const val = scroll.current;
@@ -76,18 +116,6 @@ function Chat() {
     // }, [messages]);
 
     //this one uses offsetHeight for comparison purposes
-
-    // useEffect(() => {
-    //     const val = scroll.current;
-    //     if (val) {
-    //         const atBottom =
-    //             val.scrollHeight - val.scrollTop - val.offsetHeight;
-    //         console.log(atBottom, "at bottom");
-    //         console.log(val.scrollTop, "scroll top");
-    //         console.log(val.scrollHeight, "scroll height");
-    //         console.log(val.offsetHeight, "offset height");
-    //     }
-    // }, [messages]);
 
     // useEffect(() => {
     //     const div = divUnderMessages.current;
@@ -110,15 +138,12 @@ function Chat() {
         const messageData = JSON.parse(e.data);
         if ("online" in messageData) {
             showOnlinePeople(messageData.online);
+            console.log(messageData, "message data");
         } else if ("text" in messageData) {
             setMessages((prev) => [...prev, { ...messageData }]);
             // handleUnreadMessage(messageData);
         }
     }
-
-    // function handleUnreadMessage(messageData) {
-
-    // }
 
     // removes our user name from the list of people on the chat
 
@@ -142,7 +167,7 @@ function Chat() {
                 text: newMessageText,
                 sender: id,
                 recipient: selectedUserId,
-                id: Date.now(),
+                _id: Date.now(),
             },
         ]);
 
@@ -153,7 +178,7 @@ function Chat() {
     // console.log(selectedUserId);
     // console.log(username);
 
-    const messagesWithoutDupes = uniqBy(messages, "id");
+    const messagesWithoutDupes = uniqBy(messages, "_id");
 
     return (
         <div className={styles.chatContainer}>
@@ -179,12 +204,13 @@ function Chat() {
                 {selectedUserId && (
                     <div
                         ref={scroll}
-                        onScroll={clearUnreadMessages}
+                        // onScroll={clearUnreadMessages}
+                        onScroll={checkScrollPosition}
                         className={styles.messageScrollDiv}
                     >
                         {messagesWithoutDupes.map((message) => (
                             <div
-                                key={message.id}
+                                key={message._id}
                                 className={[
                                     styles.messageStyling,
                                     message.sender === id
@@ -192,10 +218,6 @@ function Chat() {
                                         : styles.receivedMessageStyling,
                                 ].join(" ")}
                             >
-                                sender:{message.sender}
-                                <br />
-                                my id: {id}
-                                <br />
                                 {message.text}
                             </div>
                         ))}
