@@ -1,0 +1,17 @@
+.usernameIcon {
+    position: relative;
+    text-align: center;
+    width: 20px;
+    border-radius: 50%;
+    opacity: 60%;
+}
+
+.onlineVisualStatus {
+    position: absolute;
+    width: 0.5rem;
+    height: 0.5rem;
+    background-color: green;
+    opacity: 0.6;
+    bottom: 0;
+    right: 0;
+}

@@ -3,12 +3,14 @@ import styles from "./Chat.module.css";
 import { useContext, useEffect, useState, useRef } from "react";
 import { UserContext } from "../../UserProvider";
 import { uniqBy } from "lodash";
+import Avatar from "../Avatar/Avatar";
 import axios from "axios";
 
 function Chat() {
     const { username, id } = useContext(UserContext);
     const [ws, setWs] = useState(null);
     const [onlinePeople, setOnlinePeople] = useState({});
+    const [offlinePeople, setOfflinePeople] = useState({});
     const [selectedUserId, setSelectedUserId] = useState(null);
     const [newMessageText, setNewMessageText] = useState("");
     const [messages, setMessages] = useState([]);
@@ -28,6 +30,7 @@ function Chat() {
         ws.addEventListener("close", () => {
             setTimeout(() => {
                 console.log("WS disconnected. Trying to reconnect...");
+                connectToWs();
             }, 1000);
         });
     }
@@ -40,6 +43,19 @@ function Chat() {
             });
         }
     }, [selectedUserId]);
+
+    useEffect(() => {
+        axios.get("/people").then((res) => {
+            const offlinePeopleArr = res.data
+                .filter((p) => p._id !== id)
+                .filter((p) => !Object.keys(onlinePeople).includes(p._id));
+            const offlinePeople = {};
+            offlinePeopleArr.forEach((p) => {
+                offlinePeople[p._id] = p;
+            });
+            setOfflinePeople(offlinePeople);
+        });
+    }, [onlinePeople]);
 
     // at bottom of scroll is actually 109 pixels because of margin and border not factored into some of the properties
 
@@ -81,14 +97,14 @@ function Chat() {
 
     function checkScrollPosition() {
         const { clientHeight, scrollHeight, scrollTop } = scroll.current;
-        if (scrollHeight - clientHeight - scrollTop === 0) {
+        if (scrollHeight - clientHeight - scrollTop < 1) {
             // setAtBottomScroll(true);
             scrollAtBottom.current = true;
         } else {
             scrollAtBottom.current = false;
         }
 
-        // console.log(scrollAtBottom.current);
+        console.log(scrollAtBottom.current);
     }
 
     // function handleUnreadMessages(list) {
@@ -130,7 +146,7 @@ function Chat() {
         peopleArray.forEach(({ userId, username }) => {
             people[userId] = username;
         });
-        // console.log(people);
+        // console.log(people, "people");
         setOnlinePeople(people);
     }
 
@@ -190,13 +206,19 @@ function Chat() {
                         onClick={() => {
                             setSelectedUserId(userId);
                         }}
-                        className={
+                        className={[
+                            styles.personDiv,
                             userId === selectedUserId
                                 ? styles.selectedUser
-                                : undefined
-                        }
+                                : undefined,
+                        ].join(" ")}
                     >
-                        {onlinePeople[userId]}
+                        <Avatar
+                            onlinePersonUsername={onlinePeople[userId]}
+                            userId={userId}
+                            online={true}
+                        />
+                        <span>{onlinePeople[userId]}</span>
                     </div>
                 ))}
             </div>
@@ -234,23 +256,25 @@ function Chat() {
                         }}
                         className={styles.messageInput}
                         type="text"
-                        placeholder="Compose message here"
+                        placeholder="Message"
                     />
                     <button type="submit" className={styles.send}>
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="currentColor"
-                            className="w-6 h-6"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"
-                            />
-                        </svg>
+                        <span>
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="currentColor"
+                                className="w-6 h-6"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"
+                                />
+                            </svg>
+                        </span>
                     </button>
                 </form>
             )}

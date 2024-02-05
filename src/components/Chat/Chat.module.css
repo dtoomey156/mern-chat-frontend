@@ -7,6 +7,7 @@
 .user {
     flex-basis: 100%;
     background-color: beige;
+    padding: 0.5rem;
 }
 
 .peoplePane {
@@ -16,19 +17,27 @@
     cursor: default;
 }
 
+.personDiv {
+    display: flex;
+    /* align-items: center; */
+    gap: 0.5rem;
+    margin: 0.5rem;
+    padding: 0.2rem;
+}
+
 .messagePane {
     background-color: aliceblue;
     /* width: 90%; */
     flex-basis: 70%;
     /* erase below if needed*/
     position: relative;
-    min-height: 200px;
+    min-height: 20rem;
 }
 
 .messageScrollDiv {
     position: absolute;
     overflow-y: scroll;
-    inset: 5px;
+    inset: 0.5rem;
     /* delete below if necessary */
     display: flex;
     flex-direction: column;
@@ -37,28 +46,47 @@
 
 .composeMessage {
     display: flex;
+    justify-content: space-between;
     background-color: beige;
     flex-basis: 100%;
+    padding-left: 1rem;
+}
+
+input::placeholder {
+    text-align: left;
+    opacity: 50%;
 }
 
 .composeMessage input {
-    flex-basis: 80%;
+    flex-basis: 93%;
 }
 
 .composeMessage button {
-    flex-basis: 5%;
+    /* width: 4rem;
+    height: 4rem; */
+    flex-basis: 7%;
+    padding: 0.2rem;
+}
+
+.composeMessage span {
+    display: flex;
+    align-items: center;
 }
 
 .selectedUser {
-    background-color: aqua;
+    /* background-color: aqua; */
+    border: 0.1rem solid var(--main-color);
+    border-radius: 0.5rem;
 }
 
 .messageStyling {
     /* display: inline-flex; */
-    padding: 20px;
-    border: 1px red solid;
-    margin: 5px;
-    border-radius: 10px;
+    padding: 2rem;
+    border: 0.1rem red solid;
+    margin: 0.5rem;
+    border-radius: 1rem;
+    word-break: break-word;
+    /* overflow-wrap: anywhere; */
 }
 
 .sentMessageStyling {
