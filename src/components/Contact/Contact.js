@@ -1,6 +1,8 @@
 import React from "react";
+import styles from "./Contact.module.css";
+import Avatar from "../Avatar/Avatar";
 
-function Contact({ id, onClick, selectedUserId, username }) {
+function Contact({ id, onClick, username, selected, online }) {
     return (
         <div
             key={id}
@@ -9,11 +11,11 @@ function Contact({ id, onClick, selectedUserId, username }) {
             }}
             className={[
                 styles.personDiv,
-                id === selectedUserId ? styles.selectedUser : undefined,
+                selected ? styles.selectedUser : undefined,
             ].join(" ")}
         >
-            <Avatar username={username} UserId={id} online={true} />
-            <span>{onlinePeople[id]}</span>
+            <Avatar username={username} userId={id} online={online} />
+            <span>{username}</span>
         </div>
     );
 }

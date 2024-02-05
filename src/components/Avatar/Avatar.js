@@ -1,7 +1,7 @@
 import React from "react";
 import styles from "./Avatar.module.css";
 
-function Avatar({ userId, onlinePersonUsername, online }) {
+function Avatar({ userId, username, online }) {
     const colors = [
         "red",
         "green",
@@ -23,8 +23,12 @@ function Avatar({ userId, onlinePersonUsername, online }) {
         //     {onlinePersonUsername[0]}
         // </div>
         <div className={styles.usernameIcon} style={{ backgroundColor: color }}>
-            <div>{onlinePersonUsername[0].toUpperCase()}</div>
-            {online && <div className={styles.onlineVisualStatus}></div>}
+            <div>{username[0].toUpperCase()}</div>
+            {online ? (
+                <div className={styles.onlineVisualStatus}></div>
+            ) : (
+                <div className={styles.offlineVisualStatus}></div>
+            )}
         </div>
     );
 }

@@ -3,7 +3,7 @@ import styles from "./Chat.module.css";
 import { useContext, useEffect, useState, useRef } from "react";
 import { UserContext } from "../../UserProvider";
 import { uniqBy } from "lodash";
-import Avatar from "../Avatar/Avatar";
+import Contact from "../Contact/Contact";
 import axios from "axios";
 
 function Chat() {
@@ -200,27 +200,32 @@ function Chat() {
         <div className={styles.chatContainer}>
             <div className={styles.user}>{`Welcome, ${username}`}</div>
             <div className={styles.peoplePane}>
-                {Object.keys(onlineExcludeMyUsername).map((userId) => (
-                    <div
-                        key={userId}
-                        onClick={() => {
-                            setSelectedUserId(userId);
-                        }}
-                        className={[
-                            styles.personDiv,
-                            userId === selectedUserId
-                                ? styles.selectedUser
-                                : undefined,
-                        ].join(" ")}
-                    >
-                        <Avatar
-                            onlinePersonUsername={onlinePeople[userId]}
-                            userId={userId}
+                <div className={styles.peopleScrollDiv}>
+                    {Object.keys(onlineExcludeMyUsername).map((userId) => (
+                        <Contact
+                            key={userId}
+                            id={userId}
                             online={true}
+                            username={onlineExcludeMyUsername[userId]}
+                            onClick={() => {
+                                setSelectedUserId(userId);
+                            }}
+                            selected={userId === selectedUserId}
                         />
-                        <span>{onlinePeople[userId]}</span>
-                    </div>
-                ))}
+                    ))}
+                    {Object.keys(offlinePeople).map((userId) => (
+                        <Contact
+                            key={userId}
+                            id={userId}
+                            online={false}
+                            username={offlinePeople[userId].username}
+                            onClick={() => {
+                                setSelectedUserId(userId);
+                            }}
+                            selected={userId === selectedUserId}
+                        />
+                    ))}
+                </div>
             </div>
             <div className={styles.messagePane}>
                 {selectedUserId && (

@@ -15,3 +15,13 @@
     bottom: 0;
     right: 0;
 }
+
+.offlineVisualStatus {
+    position: absolute;
+    width: 0.5rem;
+    height: 0.5rem;
+    background-color: grey;
+    opacity: 0.6;
+    bottom: 0;
+    right: 0;
+}
