@@ -14,8 +14,11 @@ function Chat() {
     const [selectedUserId, setSelectedUserId] = useState(null);
     const [newMessageText, setNewMessageText] = useState("");
     const [messages, setMessages] = useState([]);
-    const divUnderMessages = useRef();
-    const scrollAtBottom = useRef(false);
+    // const divUnderMessages = useRef();
+    // const scrollAtBottom = useRef(false);
+    const [scrollAtBottom, setScrollAtBottom] = useState(false);
+    const [preventIcon, setPreventIcon] = useState(false);
+    const [previousScrollTop, setPreviousScrollTop] = useState(null);
     const scroll = useRef(null);
     const unreadMessageCount = useRef(0);
 
@@ -37,10 +40,12 @@ function Chat() {
 
     useEffect(() => {
         if (selectedUserId) {
-            scrollAtBottom.current = false;
+            scroll.current.scrollTo(0, 0);
             axios.get("/messages/" + selectedUserId).then((res) => {
                 setMessages(res.data);
             });
+            unreadMessageCount.current = 0;
+            console.log(unreadMessageCount.current, "booey");
         }
     }, [selectedUserId]);
 
@@ -89,35 +94,38 @@ function Chat() {
     // }
 
     useEffect(() => {
-        if (scroll.current && scrollAtBottom.current === true) {
+        if (scrollAtBottom) {
             const { scrollHeight } = scroll.current;
             scroll.current.scrollTo(0, scrollHeight);
         }
     }, [messages]);
 
-    function checkScrollPosition() {
-        const { clientHeight, scrollHeight, scrollTop } = scroll.current;
-        if (scrollHeight - clientHeight - scrollTop < 1) {
-            // setAtBottomScroll(true);
-            scrollAtBottom.current = true;
-        } else {
-            scrollAtBottom.current = false;
-        }
-
-        console.log(scrollAtBottom.current);
-    }
-
-    // function handleUnreadMessages(list) {
-    //     console.log({ list }, "yeahhhhhh baby");
-    // }
-
-    // function clearUnreadMessages() {
+    // function checkScrollPosition() {
     //     const { clientHeight, scrollHeight, scrollTop } = scroll.current;
-    //     if (scrollHeight <= scrollTop + clientHeight + 71) {
-    //         unreadMessageCount.current = 0;
-    //         console.log(unreadMessageCount.current);
+    //     console.log(scrollTop);
+    //     if (scrollHeight - clientHeight - scrollTop < 1) {
+    //         setScrollAtBottom(true);
+    //         setPreventIcon(true);
+    //     }
+    //     const previousScrollTop = scrollTop;
+    //     if (previousScrollTop < scrollTop) {
+    //         // setPreventIcon(false);
+    //         console.log("yes");
     //     }
     // }
+
+    function checkScrollPosition() {
+        const { clientHeight, scrollHeight, scrollTop } = scroll.current;
+        setPreviousScrollTop(scrollTop);
+        if (previousScrollTop > scrollTop) {
+            setPreventIcon(false);
+            setScrollAtBottom(false);
+            console.log(preventIcon, "prevent icon");
+        } else if (scrollHeight - clientHeight - scrollTop < 1) {
+            setScrollAtBottom(true);
+            setPreventIcon(true);
+        }
+    }
 
     // useEffect(() => {
     //     const val = scroll.current;
@@ -154,7 +162,6 @@ function Chat() {
         const messageData = JSON.parse(e.data);
         if ("online" in messageData) {
             showOnlinePeople(messageData.online);
-            console.log(messageData, "message data");
         } else if ("text" in messageData) {
             setMessages((prev) => [...prev, { ...messageData }]);
             // handleUnreadMessage(messageData);
@@ -197,92 +204,144 @@ function Chat() {
     const messagesWithoutDupes = uniqBy(messages, "_id");
 
     return (
-        <div className={styles.chatContainer}>
-            <div className={styles.user}>{`Welcome, ${username}`}</div>
-            <div className={styles.peoplePane}>
-                <div className={styles.peopleScrollDiv}>
-                    {Object.keys(onlineExcludeMyUsername).map((userId) => (
-                        <Contact
-                            key={userId}
-                            id={userId}
-                            online={true}
-                            username={onlineExcludeMyUsername[userId]}
-                            onClick={() => {
-                                setSelectedUserId(userId);
-                            }}
-                            selected={userId === selectedUserId}
-                        />
-                    ))}
-                    {Object.keys(offlinePeople).map((userId) => (
-                        <Contact
-                            key={userId}
-                            id={userId}
-                            online={false}
-                            username={offlinePeople[userId].username}
-                            onClick={() => {
-                                setSelectedUserId(userId);
-                            }}
-                            selected={userId === selectedUserId}
-                        />
-                    ))}
-                </div>
+        <div className={styles.invisibleContainer}>
+            <div className={styles.logoutDiv}>
+                <button>
+                    <span>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="1.5"
+                            stroke="currentColor"
+                            class="w-6 h-6"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M6 18 18 6M6 6l12 12"
+                            />
+                        </svg>
+                    </span>
+                </button>
             </div>
-            <div className={styles.messagePane}>
-                {selectedUserId && (
-                    <div
-                        ref={scroll}
-                        // onScroll={clearUnreadMessages}
-                        onScroll={checkScrollPosition}
-                        className={styles.messageScrollDiv}
-                    >
-                        {messagesWithoutDupes.map((message) => (
-                            <div
-                                key={message._id}
-                                className={[
-                                    styles.messageStyling,
-                                    message.sender === id
-                                        ? styles.sentMessageStyling
-                                        : styles.receivedMessageStyling,
-                                ].join(" ")}
-                            >
-                                {message.text}
-                            </div>
-                        ))}
-                        {/* <div ref={divUnderMessages}></div> */}
-                    </div>
-                )}
-            </div>
-            {selectedUserId && (
-                <form className={styles.composeMessage} onSubmit={sendMessage}>
-                    <input
-                        value={newMessageText}
-                        onChange={(e) => {
-                            setNewMessageText(e.target.value);
+            {selectedUserId && !preventIcon && (
+                <div className={styles.jumpToBottomDiv}>
+                    <button
+                        onClick={() => {
+                            const { scrollHeight } = scroll.current;
+                            scroll.current.scrollTo(0, scrollHeight);
                         }}
-                        className={styles.messageInput}
-                        type="text"
-                        placeholder="Message"
-                    />
-                    <button type="submit" className={styles.send}>
+                    >
                         <span>
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
                                 viewBox="0 0 24 24"
-                                strokeWidth={1.5}
+                                stroke-width="1.5"
                                 stroke="currentColor"
-                                className="w-6 h-6"
+                                class="w-6 h-6"
                             >
                                 <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="m4.5 5.25 7.5 7.5 7.5-7.5m-15 6 7.5 7.5 7.5-7.5"
                                 />
                             </svg>
                         </span>
                     </button>
-                </form>
+                </div>
             )}
+            <div className={styles.chatContainer}>
+                <div className={styles.user}>{`Welcome, ${username}`}</div>
+                <div className={styles.peoplePane}>
+                    <div className={styles.peopleScrollDiv}>
+                        {Object.keys(onlineExcludeMyUsername).map((userId) => (
+                            <Contact
+                                key={userId}
+                                id={userId}
+                                online={true}
+                                username={onlineExcludeMyUsername[userId]}
+                                onClick={() => {
+                                    setSelectedUserId(userId);
+                                }}
+                                selected={userId === selectedUserId}
+                            />
+                        ))}
+                        {Object.keys(offlinePeople).map((userId) => (
+                            <Contact
+                                key={userId}
+                                id={userId}
+                                online={false}
+                                username={offlinePeople[userId].username}
+                                onClick={() => {
+                                    setSelectedUserId(userId);
+                                }}
+                                selected={userId === selectedUserId}
+                            />
+                        ))}
+                    </div>
+                </div>
+                <div className={styles.messagePane}>
+                    {selectedUserId && (
+                        <div
+                            ref={scroll}
+                            // onScroll={clearUnreadMessages}
+                            onScroll={checkScrollPosition}
+                            className={styles.messageScrollDiv}
+                        >
+                            {messagesWithoutDupes.map((message) => (
+                                <div
+                                    key={message._id}
+                                    className={[
+                                        styles.messageStyling,
+                                        message.sender === id
+                                            ? styles.sentMessageStyling
+                                            : styles.receivedMessageStyling,
+                                    ].join(" ")}
+                                >
+                                    {message.text}
+                                </div>
+                            ))}
+                            {/* <div ref={divUnderMessages}></div> */}
+                        </div>
+                    )}
+                </div>
+                {selectedUserId && (
+                    <form
+                        className={styles.composeMessage}
+                        onSubmit={sendMessage}
+                    >
+                        <input
+                            value={newMessageText}
+                            onChange={(e) => {
+                                setNewMessageText(e.target.value);
+                            }}
+                            className={styles.messageInput}
+                            type="text"
+                            placeholder="Message"
+                        />
+                        <button type="submit">
+                            <span>
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={1.5}
+                                    stroke="currentColor"
+                                    className="w-6 h-6"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"
+                                    />
+                                </svg>
+                            </span>
+                        </button>
+                    </form>
+                )}
+            </div>
         </div>
     );
 }

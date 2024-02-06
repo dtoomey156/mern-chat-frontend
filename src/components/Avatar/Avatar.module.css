@@ -8,9 +8,10 @@
 
 .onlineVisualStatus {
     position: absolute;
-    width: 0.5rem;
-    height: 0.5rem;
+    width: 0.7rem;
+    height: 0.7rem;
     background-color: green;
+    border: 1px solid white;
     opacity: 0.6;
     bottom: 0;
     right: 0;
@@ -18,9 +19,10 @@
 
 .offlineVisualStatus {
     position: absolute;
-    width: 0.5rem;
-    height: 0.5rem;
+    width: 0.7rem;
+    height: 0.7rem;
     background-color: grey;
+    border: 1px solid white;
     opacity: 0.6;
     bottom: 0;
     right: 0;

@@ -1,6 +1,11 @@
+.invisibleContainer {
+    width: 30%;
+    position: relative;
+}
+
 .chatContainer {
     display: flex;
-    width: 30%;
+    width: 100%;
     flex-wrap: wrap;
     overflow: hidden;
     border-radius: 1rem;
@@ -15,6 +20,46 @@
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
     padding-left: 1rem;
+}
+
+.logoutDiv {
+    position: absolute;
+    width: 2rem;
+    height: 2rem;
+    /* border: rgba(0, 0, 0, 0.5) solid 0.1rem; */
+    border: white solid 0.3rem;
+    box-sizing: content-box;
+    border-radius: 50%;
+    background-color: beige;
+    right: -1rem;
+    top: -1rem;
+}
+
+.logoutDiv {
+    display: flex;
+    /* justify-content: center;
+    align-items: center; */
+}
+
+.logoutDiv button {
+    flex-basis: 100%;
+}
+
+.jumpToBottomDiv {
+    display: flex;
+    position: absolute;
+    width: 2rem;
+    height: 2rem;
+    border: white solid 0.3rem;
+    box-sizing: content-box;
+    border-radius: 50%;
+    background-color: beige;
+    right: -1rem;
+    bottom: -1rem;
+}
+
+.jumpToBottomDiv button {
+    flex-basis: 100%;
 }
 
 .peoplePane {
