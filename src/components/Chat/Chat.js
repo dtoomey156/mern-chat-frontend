@@ -7,7 +7,7 @@ import Contact from "../Contact/Contact";
 import axios from "axios";
 
 function Chat() {
-    const { username, id } = useContext(UserContext);
+    const { username, id, setId, setUsername } = useContext(UserContext);
     const [ws, setWs] = useState(null);
     const [onlinePeople, setOnlinePeople] = useState({});
     const [offlinePeople, setOfflinePeople] = useState({});
@@ -127,6 +127,14 @@ function Chat() {
         }
     }
 
+    function logout() {
+        axios.post("/logout").then(() => {
+            setWs(null);
+            setId(null);
+            setUsername(null);
+        });
+    }
+
     // useEffect(() => {
     //     const val = scroll.current;
     //     if (val) {
@@ -206,7 +214,7 @@ function Chat() {
     return (
         <div className={styles.invisibleContainer}>
             <div className={styles.logoutDiv}>
-                <button>
+                <button onClick={logout}>
                     <span>
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
