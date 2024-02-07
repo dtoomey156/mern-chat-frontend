@@ -105,10 +105,15 @@
 
 .composeMessage {
     display: flex;
-    justify-content: space-between;
+    /* justify-content: space-between; */
     background-color: beige;
     flex-basis: 100%;
     padding-left: 1rem;
+}
+
+.composeMessage > input {
+    margin-left: 0.5rem;
+    margin-right: 1.2rem;
 }
 
 input::placeholder {
@@ -117,20 +122,25 @@ input::placeholder {
 }
 
 .composeMessage input {
-    flex-basis: 93%;
+    flex-basis: 89%;
 }
 
-.composeMessage button {
-    /* width: 4rem;
-    height: 4rem; */
+.uploadButton {
+    flex-basis: 4%;
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: 0.5rem;
+}
+
+.uploadButton input {
+    display: none;
+}
+
+.sendButton {
     flex-basis: 7%;
+    display: flex;
     padding: 0.2rem;
     padding-right: 1rem;
-}
-
-.composeMessage span {
-    display: flex;
-    align-items: center;
 }
 
 .messageStyling {
